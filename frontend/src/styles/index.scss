@@ -1,0 +1,25 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  color: #2c3e50;
+  -webkit-font-smoothing: antialiased;
+}
+
+// 编辑器里 iframe 承载页面渲染，覆盖层负责拖拽。
+// 编辑模式下 iframe 必须禁用指针事件，否则鼠标事件被 iframe 吞掉，
+// 覆盖层收不到 drag。这条很容易被误删，改动前先看 PageCanvas.vue。
+.editor-canvas iframe.page-frame {
+  pointer-events: none;
+}

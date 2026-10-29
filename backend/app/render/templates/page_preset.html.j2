@@ -1,0 +1,60 @@
+{# 预设版式页：全部用 CSS grid/flex 描述，不做绝对定位。
+   文字能自然回流，改字号不会跑出页面。 #}
+{% set full_bleed = page.preset in ('full-bleed-overlay', 'image-only') %}
+{% set has_image_slot = page.preset not in ('text-only', 'full-bleed-overlay', 'image-only') %}
+{% set has_text = page.preset != 'image-only' %}
+
+<div class="page mode-{{ mode }}">
+  {% if full_bleed %}
+    {% if image_src %}
+      <img
+        class="bleed-image"
+        src="{{ image_src }}"
+        style="object-position: {{ options.imageFocusX * 100 }}% {{ options.imageFocusY * 100 }}%"
+        alt=""
+      />
+    {% else %}
+      <div class="image-placeholder{% if page.imageStatus == 'failed' %} failed{% endif %}">
+        {% if page.imageStatus == 'failed' %}图片生成失败{% else %}暂无插图{% endif %}
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="page-inner preset-{{ page.preset }}">
+    {% if has_image_slot %}
+      <div class="slot-image">
+        {% if image_src %}
+          <img
+            src="{{ image_src }}"
+            style="object-position: {{ options.imageFocusX * 100 }}% {{ options.imageFocusY * 100 }}%"
+            alt=""
+          />
+        {% else %}
+          <div class="image-placeholder{% if page.imageStatus == 'failed' %} failed{% endif %}">
+            {% if page.imageStatus == 'failed' %}图片生成失败{% else %}暂无插图{% endif %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if has_text and page.preset == 'full-bleed-overlay' %}
+      {# 带子的位置和高度由后端算好（auto 时会去分析插图），白板的背景与圆角
+         也由后端注入 —— 转自由页时要把同一份几何和样式原样变成块，
+         两处各算各的迟早会出现"转完位置变了"。 #}
+      <div class="overlay-zone" style="{{ zone_css }}">
+        <div
+          class="overlay-panel"
+          style="{{ text_css }}; background: {{ panel_css }}; border-radius: {{ panel_radius_mm }}mm"
+          data-autofit="1"
+          data-block-id="{{ page.id }}"
+        >{{ page.text }}</div>
+      </div>
+    {% elif has_text %}
+      <div class="slot-text" style="{{ text_css }}">
+        <div class="text-content" data-autofit="1" data-block-id="{{ page.id }}">{{ page.text }}</div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if mode == 'print' %}{% include "crop_marks.html.j2" %}{% endif %}
+</div>

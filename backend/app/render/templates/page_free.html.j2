@@ -1,0 +1,30 @@
+{# 自由拖拽页：block 绝对定位，坐标全部是 mm。
+
+   这一页的渲染结果必须与"转自由拖拽之前"的预设渲染视觉等价 ——
+   用户点转换按钮时不应该看到任何跳变。见 render/presets.py。 #}
+<div
+  class="page mode-{{ mode }}"
+  {% if page.background.type == 'color' %}style="background: {{ page.background.color }}"{% endif %}
+>
+  <div class="page-inner">
+    {% for block in blocks %}
+      <div class="block block-{{ block.type }}" style="{{ block.box_css }}">
+        {% if block.type == 'text' %}
+          {# 垂直对齐由 block.box_css 里的 justify-content 控制（.block-text 才是 flex 容器） #}
+          <div
+            class="text-content"
+            style="{{ block.text_css }}"
+            data-autofit="{{ 1 if block.auto_fit else 0 }}"
+            data-block-id="{{ block.id }}"
+          >{{ block.content }}</div>
+        {% elif block.src %}
+          <img src="{{ block.src }}" style="{{ block.image_css }}" alt="" />
+        {% else %}
+          <div class="image-placeholder">暂无插图</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if mode == 'print' %}{% include "crop_marks.html.j2" %}{% endif %}
+</div>

@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+
+# 运行时产物：书籍数据、生成的插图、导出的 PDF
+backend/data/
+
+# 字体源文件缓存（由 scripts/subset_fonts.py 下载）
+backend/.cache/
+
+# 构建/测试缓存
+.pytest_cache/
+*.tsbuildinfo
+
+# 自托管字体体积大，按需重新生成（见 README）
+backend/app/render/fonts/*.woff2

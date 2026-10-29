@@ -1,0 +1,345 @@
+/* ==========================================================================
+   页面样式 —— 预览与 PDF 导出共用这一份。
+
+   预览时 --bleed 为 0，印刷时由后端注入实际出血值。除此之外两种模式
+   没有任何差异，这是"所见即所得"的实现方式。
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   字体：全部自托管。
+
+   不要改成系统字体 —— 浏览器预览用的字体和 headless Chromium 能拿到的
+   系统字体可能不同，会造成"预览好看、导出跑版"这类极难排查的问题。
+   -------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Noto Serif SC';
+  src: url('/api/assets/fonts/noto-serif-sc-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Noto Serif SC';
+  src: url('/api/assets/fonts/noto-serif-sc-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  src: url('/api/assets/fonts/noto-sans-sc-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  src: url('/api/assets/fonts/noto-sans-sc-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'LXGW WenKai';
+  src: url('/api/assets/fonts/lxgw-wenkai-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* 霞鹜文楷没有 Bold，700 挂的是 Medium。不这样做的话浏览器会自己合成假粗，
+   楷体的笔画一糊就完全不像楷体了。 */
+@font-face {
+  font-family: 'LXGW WenKai';
+  src: url('/api/assets/fonts/lxgw-wenkai-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+/* --------------------------------------------------------------------------
+   基础
+   -------------------------------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #e9ebee;
+  /* 逐页 iframe 预览时整页恰好填满视口；@media screen 给 .page 加的
+     margin-bottom:16px 是多页浏览用的间距，在这里会让文档高度多出
+     16px、iframe 内部弹出滚动条。锁掉滚动，单页本就不该有溢出。 */
+  overflow: hidden;
+}
+
+/* 兜底栈。绝大多数字都有内联的 font-family（来自 options/style），这一条只
+   管没有的那些 —— .image-placeholder、以及将来新增的元素。所以它必须和
+   config.DEFAULT_FONT_FAMILY 保持一致，否则会出现"正文是楷体、某处一小块
+   还是宋体"的鬼影。
+
+   宋体留在栈里不删：@font-face 里两条 Noto Serif SC 声明也不能删 —— 已有
+   的书数据里存着这个字体族，删了会静默回退到系统字体，预览和导出就会不一样。 */
+body {
+  font-family: 'LXGW WenKai', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+/* 整页：包含出血。预览时 --bleed 为 0，等同于成品尺寸。 */
+.page {
+  position: relative;
+  width: calc(var(--trim-w) + 2 * var(--bleed));
+  height: calc(var(--trim-h) + 2 * var(--bleed));
+  overflow: hidden;
+  background: #ffffff;
+  margin: 0 auto;
+  break-after: page;
+  page-break-after: always;
+}
+
+.page:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+/* 成品区：裁掉出血后读者实际看到的范围。
+   满版图故意放在 .page 而不是 .page-inner 上，这样它自然覆盖出血。 */
+.page-inner {
+  position: absolute;
+  inset: var(--bleed);
+  overflow: hidden;
+}
+
+/* 屏幕上给页面加点投影，导出时（print 媒体）去掉 */
+@media screen {
+  .page {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    margin-bottom: 16px;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff;
+  }
+
+  .page {
+    box-shadow: none;
+    margin: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   预设版式
+
+   全部用 grid / flex 描述，不做绝对定位 —— 这样文字能自然回流，
+   不会因为字号变化就跑出页面。
+   -------------------------------------------------------------------------- */
+
+.preset-image-top {
+  display: grid;
+  grid-template-rows: 55fr 45fr;
+}
+
+.preset-image-bottom {
+  display: grid;
+  grid-template-rows: 45fr 55fr;
+}
+
+.preset-image-bottom .slot-image {
+  order: 2;
+}
+
+.preset-image-bottom .slot-text {
+  order: 1;
+}
+
+.preset-split-lr {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.preset-text-only {
+  display: block;
+}
+
+.preset-image-only,
+.preset-full-bleed-overlay {
+  display: block;
+}
+
+.slot-image {
+  position: relative;
+  overflow: hidden;
+  background: #f2f3f5;
+}
+
+.slot-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.slot-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* flex-shrink:0 是关键：否则内容会被 flex 压缩到容器高度，
+   scrollHeight 就测不出真实溢出量了 */
+.slot-text .text-content {
+  flex-shrink: 0;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.preset-text-only .slot-text {
+  width: 100%;
+  height: 100%;
+}
+
+/* 满版图叠字：图铺满整页，文字浮在上面 */
+.bleed-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 叠字区：一条横带。位置和高度全部由后端注入内联样式（top/left/right/height），
+   见 app/render/presets.py 的 overlay_zone_mm —— 自由页的文字块用的是同一个
+   矩形，所以两边不能用两套算法各算各的。
+
+   这一层是 fit-text.js 量溢出的"盒子"：文字（含白板的内边距）装不下时，
+   它比 clientHeight 高，自动缩字才会启动。 */
+.overlay-zone {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* 白板。内边距、背景、圆角都在这里，和后端拼的 text_css 一起作用。
+   flex-shrink: 0 与 .slot-text 同理：不加的话内容会被压扁到带子高度，
+   scrollHeight 就测不出真实溢出量了。 */
+.overlay-panel {
+  width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* --------------------------------------------------------------------------
+   自由拖拽页
+
+   block 用绝对定位，坐标全部是 mm。
+   -------------------------------------------------------------------------- */
+
+.block {
+  position: absolute;
+  overflow: hidden;
+}
+
+.block-text {
+  display: flex;
+  flex-direction: column;
+}
+
+/* flex-shrink:0 与预设版式同理：不加的话内容会被压到容器高度，
+   fit-text.js 就测不出真实溢出量，自动缩字会失效。 */
+.block-text .text-content {
+  width: 100%;
+  flex-shrink: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.block-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 图片还没生成时的占位 */
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+    45deg,
+    #f5f6f8,
+    #f5f6f8 10px,
+    #eceef1 10px,
+    #eceef1 20px
+  );
+  color: #b1b5bb;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 11pt;
+}
+
+.image-placeholder.failed {
+  background: #fef0f0;
+  color: #c45656;
+}
+
+/* --------------------------------------------------------------------------
+   文字溢出提示
+
+   fit-text.js 会先尝试降字号，实在放不下才打上 has-overflow。
+   编辑器据此画红框，导出时也会保留（宁可让用户看见，也不要静默截断）。
+   -------------------------------------------------------------------------- */
+
+.has-overflow {
+  outline: 1px dashed rgba(220, 60, 60, 0.55);
+  outline-offset: 2px;
+}
+
+/* 导出时不要把这圈提示线印上去 */
+@media print {
+  .has-overflow {
+    outline: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   裁切标记：只在印刷模式出现，画在出血区里
+   -------------------------------------------------------------------------- */
+
+.crop-mark {
+  display: none;
+  position: absolute;
+  background: #000000;
+}
+
+.mode-print .crop-mark {
+  display: block;
+}
+
+.crop-mark-h {
+  width: 4mm;
+  height: 0.25pt;
+}
+
+.crop-mark-v {
+  width: 0.25pt;
+  height: 4mm;
+}

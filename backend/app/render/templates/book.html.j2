@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ book.title }}</title>
+    {# 开本尺寸与 @page 由后端按模式注入：预览版 bleed=0，印刷版为实际出血值 #}
+    <style>{{ vars_css | safe }}</style>
+    <style>{{ css | safe }}</style>
+  </head>
+  <body class="mode-{{ mode }}">
+    {{ pages_html | safe }}
+    <script>{{ fit_js | safe }}</script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+[
+  {
+    "family": "Noto Serif SC",
+    "label": "思源宋体",
+    "url": "/api/assets/fonts/noto-serif-sc-400.woff2",
+    "weights": [
+      400,
+      700
+    ]
+  },
+  {
+    "family": "Noto Sans SC",
+    "label": "思源黑体",
+    "url": "/api/assets/fonts/noto-sans-sc-400.woff2",
+    "weights": [
+      400,
+      700
+    ]
+  },
+  {
+    "family": "LXGW WenKai",
+    "label": "楷体（霞鹜文楷）",
+    "url": "/api/assets/fonts/lxgw-wenkai-400.woff2",
+    "weights": [
+      400,
+      700
+    ]
+  }
+]

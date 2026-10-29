@@ -1,0 +1,16 @@
+{
+  "name": "make-story-book",
+  "version": "0.1.0",
+  "private": true,
+  "description": "基于已有故事文本创作绘本：分页、配图、排版、导出 PDF",
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c cyan,magenta \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "cd backend && uv run python run.py",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "setup": "npm install && npm --prefix frontend install && cd backend && uv sync",
+    "build": "npm --prefix frontend run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

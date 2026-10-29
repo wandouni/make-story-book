@@ -1,0 +1,12 @@
+{# 裁切标记：只在印刷模式渲染（.mode-print .crop-mark 才显示）。
+
+   线对齐成品边界，向页面边缘延伸，落在出血区里。
+   纯 CSS 画的，不占位图体积，也不会被当成内容。 #}
+<div class="crop-mark crop-mark-h" style="top: var(--bleed); left: 0"></div>
+<div class="crop-mark crop-mark-v" style="top: 0; left: var(--bleed)"></div>
+<div class="crop-mark crop-mark-h" style="top: var(--bleed); right: 0"></div>
+<div class="crop-mark crop-mark-v" style="top: 0; right: var(--bleed)"></div>
+<div class="crop-mark crop-mark-h" style="bottom: var(--bleed); left: 0"></div>
+<div class="crop-mark crop-mark-v" style="bottom: 0; left: var(--bleed)"></div>
+<div class="crop-mark crop-mark-h" style="bottom: var(--bleed); right: 0"></div>
+<div class="crop-mark crop-mark-v" style="bottom: 0; right: var(--bleed)"></div>
